@@ -126,11 +126,12 @@ for f in "${FILES[@]}"; do
   fi
 
   # --- verb-first warning (non-blocking) ---
+  warnings=()
   if [ -n "$name" ]; then
     verb="$(printf '%s' "$name" | cut -d_ -f1)"
     case "$verb" in
       create|add|alter|fix|drop|set|update|rename|delete|migrate) ;;
-      *) issues+=("warning: description should start with a verb (got '$verb')"); WARN=$((WARN+1));;
+      *) warnings+=("description should start with a verb (got '$verb')"); WARN=$((WARN+1));;
     esac
   fi
 
@@ -141,6 +142,11 @@ for f in "${FILES[@]}"; do
       echo "    - $i"
     done
     FAIL=$((FAIL+1))
+  elif [ ${#warnings[@]} -gt 0 ]; then
+    echo "! $base"
+    for w in "${warnings[@]}"; do
+      echo "    - warning: $w"
+    done
   fi
 done
 
