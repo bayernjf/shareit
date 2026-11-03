@@ -6,7 +6,8 @@
 # MIGRATION_CONVENTION.md:
 #   1. File naming:      NNN_verb_snake_case.sql
 #   2. Numbering:        starts at 001, strictly incremental, no duplicates/skips
-#   3. Header comment:   every file has `-- Migration NNN:`, `-- File:`, and
+#   3. Header comment:   every file has `-- Migration NNN:` (NNN must match the
+#                        file number), `-- File:`, and
 #                        `-- Date: YYYY-MM-DD HH:mm` (24h, minute precision)
 #   4. Consistency:      `-- File:` matches the actual file name
 #
@@ -98,8 +99,16 @@ for f in "${FILES[@]}"; do
   # --- 3. header comment (first 12 lines) ---
   hdr="$(head -n 12 "$f")"
 
-  if ! grep -q -- "-- Migration" <<<"$hdr"; then
+  migline="$(grep -m1 -- "-- Migration" <<<"$hdr" || true)"
+  if [ -z "$migline" ]; then
     issues+=("header: missing '-- Migration NNN:' line")
+  elif [[ "$migline" =~ --\ Migration\ ([0-9]{3}): ]]; then
+    hdrnum="${BASH_REMATCH[1]}"
+    if [ -n "$num" ] && [ "$hdrnum" != "$num" ]; then
+      issues+=("header: '-- Migration ${hdrnum}:' does not match file number '${num}'")
+    fi
+  else
+    issues+=("header: '-- Migration' line is missing the 'NNN:' number")
   fi
 
   if ! grep -qE -- "-- Date: [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}" <<<"$hdr"; then
