@@ -1,0 +1,17 @@
+# Secrets & local env — never commit credentials (see AGENTS.md)
+.env
+.env.*
+!.env.example
+
+# Dependencies & build output
+node_modules/
+dist/
+build/
+
+# OS / editor noise
+.DS_Store
+*.log
+
+# Scratch media — real photos/videos must never be committed
+media/tmp/
+tmp/
